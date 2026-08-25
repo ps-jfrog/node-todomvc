@@ -1,0 +1,8 @@
+version: 1
+type: npm
+resolver:
+    repo: todomvc-npm-virtual
+    serverId: psazuse
+deployer:
+    repo: todomvc-npm-virtual
+    serverId: psazuse

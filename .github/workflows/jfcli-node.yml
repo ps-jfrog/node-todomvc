@@ -1089,4 +1089,71 @@ jobs:
         continue-on-error: false
         run: jf rt bp ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}} --detailed-summary=true
     
-  
+  waiver: 
+    name: "CA request"
+    runs-on: ubuntu-latest
+    env:
+      BUILD_NAME: "todomvc-ca"
+      BUILD_ID: "ga-ca-${{github.run_number}}"
+      REPO_VIRTUAL: "cg-lab-npm"
+    defaults:
+      run:
+        working-directory: "${{env.DEFAULT_WORKSPACE}}/examples/typescript-react"
+    steps:
+      - name: "Setup JFrog CLI"
+        uses: jfrog/setup-jfrog-cli@v4
+        id: jfrog-cli
+        env:
+          JF_URL: ${{env.JF_RT_URL}}
+          JFROG_CLI_LOG_LEVEL: "DEBUG"
+        with:
+          version: latest 
+          oidc-provider-name: ${{vars.JF_OIDC_PROVIDER_NAME}}
+          disable-job-summary: ${{env.JOB_SUMMARY}}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: "Folder list"
+        run: | 
+            rm -rf node_modules package-lock.json
+            tree .
+
+      - name: "JF Show"
+        run: | 
+            jf c s
+
+      - name: "Setup Summary"
+        run: |
+          echo "# :frog: Setup Summary :pushpin:" >> $GITHUB_STEP_SUMMARY
+          echo " " >> $GITHUB_STEP_SUMMARY
+          echo " " >> $GITHUB_STEP_SUMMARY
+          echo " - Installed JFrog CLI [$(jf --version)](https://jfrog.com/getcli/) " >> $GITHUB_STEP_SUMMARY
+          echo "    - $(jf --version) " >> $GITHUB_STEP_SUMMARY
+          echo "    - NPM version: $(npm -v) " >> $GITHUB_STEP_SUMMARY
+          echo "    - Node version: $(node -v) " >> $GITHUB_STEP_SUMMARY
+          echo " " >> $GITHUB_STEP_SUMMARY
+          echo " " >> $GITHUB_STEP_SUMMARY
+          echo " Curation Info:" >> $GITHUB_STEP_SUMMARY
+          echo "    - Policy Name: Curation-blocked-remote " >> $GITHUB_STEP_SUMMARY
+          echo "    - Repo-Virtual: ${{env.REPO_VIRTUAL}} " >> $GITHUB_STEP_SUMMARY   
+          echo "    - Repo-remote: curation-blocked-npm-remote " >> $GITHUB_STEP_SUMMARY 
+
+      - name: "Create NPM config"
+        run: |
+          jf npmc --repo-resolve=${{env.REPO_VIRTUAL}} --repo-deploy=${{env.REPO_VIRTUAL}}
+
+      - name: "Curation-Audit"
+        run: | 
+          jf ca --format=table --threads=100
+
+      - name: "NPM Install"
+        run: |  
+          jf npm install --build-name=${{env.BUILD_NAME}} --build-number=${{env.BUILD_ID}}
+          jf npm publish --build-name=${{ env.BUILD_NAME}} --build-number=${{ env.BUILD_ID}} 
+
+      - name: "Build-Info"
+        run: |
+          jf rt bag ${BUILD_NAME} ${BUILD_ID} 
+          jf rt bce ${BUILD_NAME} ${BUILD_ID}
+          jf rt bp ${BUILD_NAME} ${BUILD_ID}
