@@ -21,6 +21,14 @@ Both paths use build name **`todomvc-npm`**, resolve/deploy through virtual repo
 
 Native mode runs stock `npm` through `jf package-alias` (Ghost Frog). Build name/number come from environment variables, not `--build-name` / `--build-number` on the npm commands. The script stamps a unique version (`1.0.<unix-epoch>`) so republish does not collide, then restores `package.json` afterward.
 
+#### References
+
+Refer below for more information about the variables; JFROG_RUN_NATIVE, JFROG_CLI_GHOST_FROG, package-alias
+
+ - https://docs.jfrog.com/artifactory/docs/jfrog-cli-package-alias
+ - https://docs.jfrog.com/artifactory/docs/jfrog-cli-package-alias#github-actions-setup 
+ - https://docs.jfrog.com/artifactory/docs/native-mode#npm-native-mode
+
 Requires `PSAZUSE_JF_ACCESS_TOKEN`.
 
 ### Commands
@@ -51,6 +59,7 @@ jf rt bp "${BUILD_NAME}" "${BUILD_ID}" --collect-env=true --detailed-summary=tru
 Publishes **`todomvc-npm`** / **`npm-2026.08.31+0753`**. `npm publish` reports `todomvc@1.0.1788187987` and tarball `todomvc-1.0.1788187987.tgz` against `https://psazuse.jfrog.io/artifactory/api/npm/todomvc-npm-virtual/`.
 
 ![Native commands](./images/npm-cli.png)
+
 
 ### Artifactory — Builds
 
@@ -86,7 +95,8 @@ The **Build Info JSON** tab is the full published metadata. The module id **`tod
 
 This path uses `jf npmc` plus `jf npm install` / `jf npm publish` with explicit `--build-name` / `--build-number`. The package version stays **`0.1.2`** from `package.json`.
 
-Docs: [Use npm with JFrog CLI](https://docs.jfrog.com/artifactory/docs/use-npm-with-jfrog-cli)
+#### References
+- https://docs.jfrog.com/artifactory/docs/use-npm-with-jfrog-cli
 
 ### Commands
 
